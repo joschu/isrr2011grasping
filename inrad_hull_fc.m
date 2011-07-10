@@ -11,7 +11,9 @@ R = M/N; % number of frctional components
 
 tansups_qm = t_qp * Gt_pm * Mu_mm; % tangential components contrib to support
 tansups_qnr = reshape(tansups_qm,Q,N,R);
-sups_qn = max(t_qp*Gn_pn + norms(tansups_qnr,2,3),0);
+tansups_qn = norms(tansups_qnr,2,3);
+normsups_qn = t_qp*Gn_pn;
+sups_qn = (normsups_qn>0).*(normsups_qn + tansups_qn);
 sups_nq = sups_qn';
 [inds_k,r] = mysfo_saturate(@(inds) max(sups_nq(inds,:),[],1),1:N,K);
 
