@@ -4,3 +4,10 @@
 tags
 *.pyc
 trash
+*.blend*
+*.avi
+*.mpg
+wingdbstub.py
+*.obj
+*.mtl
+*_info.txt

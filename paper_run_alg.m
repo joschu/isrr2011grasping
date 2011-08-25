@@ -1,9 +1,10 @@
-function paper_run_alg(modelnum,alg,K,force)
-if nargin < 4, force=0; end
+function paper_run_alg(modelnum,alg,K,runstr,force)
+if nargin < 5, force=0; end
 
 
 objdir = '/home/joschu/Data/grasping/obj'
-outdir = '/home/joschu/Data/grasping/results'
+outdir = sprintf('/home/joschu/Data/grasping/results%s',runstr)
+if ~exist(outdir,'dir'), mkdir(outdir); end
 objfname = sprintf('%s/m%i.obj',objdir,modelnum)
 % c = clock;
 % outname = sprintf('%s/m%i_%i_sat_%i-%i-%i-%i.mat',outdir,modelnum,K,c(3),c(4),c(5),floor(c(6)))
@@ -49,6 +50,8 @@ switch alg
         [r,inds] = inrad_mink_k_sat(G_6f',K,c_6',t_k6);
     case 'bb'
         [r,inds] = inrad_bb(G_6f',K,c_6',t_k6,'mink');
+    case 'bb1'
+        [r,inds] = inrad_bb1(G_6f',K,c_6',t_k6,'mink');        
     case 'rand'
         [r,inds] = inrad_heuristic(G_6f',K,c_6',t_k6,'mink','rand');
     case 'unif'
