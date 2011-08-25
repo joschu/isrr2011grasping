@@ -1,4 +1,4 @@
-function [r_best,inds_k,tree] = inrad_bb(x_np,K,c_p,t_kp,Q,usekmeans,baseheur)
+function [r_best,inds_k,tree] = inrad_bb1(x_np,K,c_p,t_kp,Q,usekmeans,baseheur)
 
     if nargin < 6, usekmeans = 1; end
     if nargin < 7, baseheur = 'sat'; end
@@ -15,7 +15,7 @@ function [r_best,inds_k,tree] = inrad_bb(x_np,K,c_p,t_kp,Q,usekmeans,baseheur)
     goodinds = find(ubinds==1);
     tree = struct('parts',{{1:N}},'sels',K,'lb',lb_best,'ub',ub,...
         'lbinds',lbinds,'ubinds',ubinds,'parent',0,'active',1,...
-        'goodinds',goodinds,'badinds',badinds);
+        'goodinds',goodinds,'badinds',badinds,'code',-1*ones(1,N,'int8'));
     
     
     skipped=0; notskipped = 0;
@@ -36,44 +36,24 @@ function [r_best,inds_k,tree] = inrad_bb(x_np,K,c_p,t_kp,Q,usekmeans,baseheur)
             notskipped = notskipped+1;
             node = tree(i_expand);
             
-%             [sel,i_lgsel] =  max(cellfun(@length,node.parts));
+            maybeinds = find(node.code==-1);
+            n_branches = length(maybeinds);
             
-            [partsize,i_lgpart] = max(cellfun(@length,node.parts));
-            if partsize > 1
-                sel = node.sels(i_lgpart);            
-                part = node.parts{i_lgpart};
-
-                if usekmeans
-                    clu_inds = kmeans(x_np(part),2);
-                    leftpart = part(clu_inds==1);
-                    rightpart = part(clu_inds==2);
-                    leftpartsize = length(leftpart)
-                    rightpartsize = length(rightpart)
-                end
+            for i_branch = 1:n_branches
                     
-                
-                if ~usekmeans || leftpartsize == 0 || rightpartsize == 0
-                    leftpartsize=ceil(length(part)/2);
-                    rightpartsize=length(part)-leftpartsize;
-                    leftpart = part(1:leftpartsize);
-                    rightpart = part(leftpartsize+1:end);                    
-                end
-                
-                newparts = {node.parts{1:i_lgpart-1}, leftpart,rightpart, node.parts{i_lgpart+1:end}};            
-                for leftsel = 0:sel
-                    rightsel = sel-leftsel;
-                    if leftsel <= leftpartsize && rightsel <= rightpartsize...
-                            && leftsel >= length(intersect(leftpart,node.goodinds))...
-                            && rightsel >= length(intersect(rightpart,node.goodinds))...
-                            && leftsel <= length(setdiff(leftpart,node.badinds))...
-                            && rightsel <= length(setdiff(rightpart,node.badinds))
+                m = maybeinds(i_branch);
+                newcode = node.code;
+                newcode(m) = 1;
+                newcode(maybeinds(1:i_branch-1)) = 0;
+                oldgoodinds = find(newcode==1);
+                oldbadinds = find(newcode==0);
 
-                        newsels = [node.sels(1:i_lgpart-1), leftsel,rightsel,node.sels(i_lgpart+1:end)];
-
-                        [ub,ubinds] = inrad_mink_ub(x_np,K,c_p,t_kp,newparts,newsels,node.goodinds,node.badinds);
-                        if ub > 0
-                            badinds = find(abs(ubinds-0)<.01);
-                            goodinds = find(abs(ubinds-1)<.01);
+                [ub,ubinds] = inrad_mink_ub(x_np,K,c_p,t_kp,{1:N},K,oldgoodinds,oldbadinds);
+                if ub>0
+                    badinds = find(abs(ubinds-0)<.01);
+                    goodinds = find(abs(ubinds-1)<.01);
+                    newcode(badinds) = 0;
+                    newcode(goodinds) = 1;
     %                         if all(ubinds == 0 | ubinds == 1)
     %                             lbinds = ubinds;
     %                             lb = ub;
@@ -83,16 +63,17 @@ function [r_best,inds_k,tree] = inrad_bb(x_np,K,c_p,t_kp,Q,usekmeans,baseheur)
     %                         if length(tree) == 11
     %                             1
     %                         end
-                            [lb,lbinds] = inrad_mink_lb(x_np,K,c_p,t_kp,newparts,newsels,goodinds,badinds,baseheur);
+                    [lb,lbinds] = inrad_mink_lb(x_np,K,c_p,t_kp,{1:N},K,goodinds,badinds,baseheur);
 
-                            lb_best = max(lb_best,lb);
 
-                            tree(end+1) = struct('parts',{newparts},'sels',newsels,...
-                                'lb',lb,'ub',ub,'lbinds',lbinds,'ubinds',ubinds,'parent',...
-                                i_expand,'active',1,'goodinds',goodinds,'badinds',badinds);
-                            fprintf('tree size: %i. active: %i\n',length(tree),length(inds_active))
-                        end
-                    end
+
+
+                    lb_best = max(lb_best,lb);
+
+                    tree(end+1) = struct('parts',[],'sels',[],...
+                        'lb',lb,'ub',ub,'lbinds',lbinds,'ubinds',ubinds,'parent',...
+                        i_expand,'active',1,'goodinds',goodinds,'badinds',badinds,'code',newcode);
+                    fprintf('tree size: %i. active: %i\n',length(tree),length(inds_active))
                 end
             end
         end

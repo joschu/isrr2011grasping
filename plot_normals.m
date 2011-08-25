@@ -15,7 +15,7 @@ wobj = read_wobj(fname);
 [verts_v3,faces_f3,normals_f3] = wobj_verts_faces(wobj);
 [~,cents_f3,~] = get_contact_wrenches3d(verts_v3,faces_f3,normals_f3);
 %%
-
+size(faces_f3,1)
 if nargin < 2,
     inds = 1:size(faces_f3,1);
 end
@@ -23,7 +23,7 @@ end
 
 % vtkdestroy;
 VTK = vtkinit()
-vtkplotmesh(gcvtk, verts_v3, faces_f3, 'representation','surface','opacity',.5,'backgroundColor',[1 1 1])
+vtkplotmesh(gcvtk, verts_v3, faces_f3, 'representation','surface','opacity',.75,'backgroundColor',[1 1 1])
 
 pointSize = (max(verts_v3(:,1))-min(verts_v3(:,1)))/75;
 
