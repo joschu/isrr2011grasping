@@ -23,7 +23,7 @@ end
 
 % vtkdestroy;
 VTK = vtkinit()
-vtkplotmesh(gcvtk, verts_v3, faces_f3, 'representation','surface','opacity',.75,'backgroundColor',[1 1 1])
+vtkplotmesh(gcvtk, verts_v3, faces_f3, 'representation','surface','opacity',1,'backgroundColor',[1 1 1])
 
 pointSize = (max(verts_v3(:,1))-min(verts_v3(:,1)))/75;
 
