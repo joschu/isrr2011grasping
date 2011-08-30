@@ -3,7 +3,7 @@ VTK = vtkinit();
 vtkplotmesh(gcvtk, verts_v3, faces_f3, 'representation','surface','opacity',.5,'backgroundColor',[1 1 1])
 
 pointSize = (max(verts_v3(:,1))-min(verts_v3(:,1)))/150;
-vtkplotpoints(gcvtk, cents_f3(1:size(faces_f3,1),:),'pointSize',pointSize,'color',[0 0   1 0.6]);
+vtkplotpoints(gcvtk, cents_f3(cand_inds,:),'pointSize',pointSize,'color',[0 0   1 0.6]);
 
 plot_inds = cand_inds(opt_inds);
 K = numel(plot_inds);

@@ -1,2 +1,2 @@
-fname = '/home/joschu/Data/grasping/obj/m649.obj';
-desc = 'gun';
+fname = '/home/joschu/Data/grasping/obj_fixed/plane.obj';
+desc = 'plane';
